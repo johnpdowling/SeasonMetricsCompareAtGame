@@ -1,0 +1,6 @@
+git+https://github.com/jldbc/pybaseball.git
+atproto
+pyyaml
+matplotlib
+numpy
+pandas
