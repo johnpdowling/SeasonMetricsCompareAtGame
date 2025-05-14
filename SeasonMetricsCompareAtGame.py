@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from io import BytesIO
+from matplotlib.ticker import MaxNLocator
 from pybaseball import cache, schedule_and_record
 from atproto import Client
 import logging
@@ -87,8 +88,10 @@ def generate_plot(teamA, yearA, teamB, yearB, games_played, the_last, this_time,
     # Add labels, title, and legend
     plt.xlabel('Games Played')
     plt.xlim(1, games_played)
+    plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
     plt.ylabel('Wins')
     plt.ylim(0, max(max(y1), max(y2)) + 1)
+    plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
     plt.title(f"Wins Comparison: {teamA} {yearA} vs {teamB} {yearB} Seasons")
     plt.legend(loc='upper left')
     plt.grid(True)
