@@ -107,7 +107,7 @@ def generate_chart(year, team, diff_data, games_played):
     run_diff_per_game_olden_record_modern_games = (BOS_1932_DIFF - run_diff) / games_remaining_modern
     current_wins = get_wins_after_games(diff_data, games_played)
     current_win_percentage = current_wins / games_played
-    pythagorean_win_percentage = diff_data.loc[games_played, 'R'] ** 2 / (diff_data.loc[games_played, 'R'] ** 2 + diff_data.loc[games_played, 'RA'] ** 2)
+    pythagorean_win_percentage = (diff_data.loc[games_played, 'R'] ** 2) / ((diff_data.loc[games_played, 'R'] ** 2 + diff_data.loc[games_played, 'RA'] ** 2))
     pythagorean_wins = pythagorean_win_percentage * games_played
     pythagorean_win_percentage_br = (diff_data.loc[games_played, 'R'] ** 1.83) / ((diff_data.loc[games_played, 'R'] ** 1.83) + (diff_data.loc[games_played, 'RA'] ** 1.83))
     pythagorean_wins_br = pythagorean_win_percentage_br * games_played
@@ -115,40 +115,58 @@ def generate_chart(year, team, diff_data, games_played):
     # Create a DataFrame to organize the data
     data = {
         "Metric": [
-            "Run Differential",
-            "Run Differential per Game",
-            "Games Remaining (Modern)",
-            "Games Remaining (Olden)",
-            "RD/Game to Match 2023 OAK",
-            "RD/Game to Match 1932 BOS",
-            "RD/Game to Match 1932 BOS (Modern Games)",
-            "Current Wins",
-            "Current Win Percentage",
-            "Pythagorean Win Percentage",
-            "Pythagorean Wins",
-            "Pythagorean Win Percentage (BR)",
-            "Pythagorean Wins (BR)"
+            "RD/G",
+            "RD/G, match 2023OAK",
+            "RD/G, match 1932BOS",
+            "(154) RD/G, match 1932BOS",
+            "G Remaining 162",
+            "G Remaining 154",
+            "",
+            "Actual W%",
+            "Actual W",
+            "Pythag W%",
+            "Pythag W",
+            "Pythag W% (BR)",
+            "Pythag W (BR)"
         ],
         "Value": [
-            run_diff,
             round(run_diff_per_game, 4),
-            games_remaining_modern,
-            games_remaining_olden,
             round(run_diff_per_game_modern_record, 4),
             round(run_diff_per_game_olden_record, 4),
             round(run_diff_per_game_olden_record_modern_games, 4),
-            current_wins,
+            f"{int(games_remaining_modern)}",
+            int(games_remaining_olden),
+            "",
             round(current_win_percentage, 4),
+            int(current_wins),
             round(pythagorean_win_percentage, 4),
             round(pythagorean_wins, 4),
             round(pythagorean_win_percentage_br, 4),
             round(pythagorean_wins_br, 4)
+        ],
+        "Total": [
+            f"{int(run_diff)}",
+            OAK_2023_DIFF,
+            BOS_1932_DIFF,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
         ]
     }
     df = pd.DataFrame(data)
 
-    # Render the DataFrame as a table image
-    fig, ax = plt.subplots(figsize=(8, 8))  # Adjust figure size for better canvas fit
+    # Dynamically adjust the figure size based on the number of rows
+    num_rows = len(df)
+    fig_width = max(8, num_rows * 0.5)  # Minimum width of 8, expand by 0.5 per row
+    fig, ax = plt.subplots(figsize=(fig_width, 8))  # Adjust figure size for better canvas fit
+
     ax.axis('tight')
     ax.axis('off')
     ax.set_title(f"{year} {team} RunDiff Metrics", fontsize=20)
@@ -170,7 +188,7 @@ def generate_chart(year, team, diff_data, games_played):
     buffer.close()
     plt.close()
 
-    return raw_image_data
+    return raw_image_data, run_diff, current_win_percentage, pythagorean_win_percentage, pythagorean_win_percentage_br
 
 def post_plot_to_bluesky(client, teamA, yearA, teamB, yearB, games_played, y1_last, y2_last, raw_image_data, colorA='red', colorB='blue'):
     """Post the comparison plot to Bluesky."""
@@ -179,7 +197,7 @@ def post_plot_to_bluesky(client, teamA, yearA, teamB, yearB, games_played, y1_la
         bluesky_post = (
             f"With {games_played} game(s) in the books, the {teamB} {yearB} season is somehow worse at {y2_last} wins,"
             f"behind the {teamA} {yearA} season by {y1_last - y2_last} win(s)."
-            ""
+            "\n\n"
             "No 'could always be' worse here. It *is* worse at this point."
         )
     elif y1_last < y2_last:
@@ -187,14 +205,14 @@ def post_plot_to_bluesky(client, teamA, yearA, teamB, yearB, games_played, y1_la
         bluesky_post = (
             f"Through {games_played} game(s) played, the {teamB} {yearB} season is ahead with {y2_last} wins, "
             f"above the {teamA} {yearA} season by {y2_last - y1_last} win(s)."
-            ""
+            "\n\n"
             "The grass, for now, is greener here. It could always be worse."
         )
     else:
         # It's not worse, but it's not better
         bluesky_post = (
             f"After {games_played} game(s), the {teamB} {yearB} season isn't better than the {teamA} {yearA} season at {y1_last} win(s) each."
-            ""
+            "\n\n"
             "But it also isn't worse."
         )
 
@@ -206,16 +224,19 @@ def post_plot_to_bluesky(client, teamA, yearA, teamB, yearB, games_played, y1_la
     )
     client.send_image(text=bluesky_post, image=raw_image_data, image_alt=image_alt_text)
 
-def post_chart_to_bluesky(client, team, year, games_played, raw_image_data):
+def post_chart_to_bluesky(client, team, year, games_played, raw_image_data, run_diff, current_win_percentage, pythagorean_win_percentage, pythagorean_win_percentage_br):
     """Post the run differential chart to Bluesky."""
     bluesky_post = (
-        f"After {games_played} game(s), the {team} {year} season has a run differential of {raw_image_data['run_diff']}."
-        f" The current win percentage is {raw_image_data['current_win_percentage']:.4f}, "
-        f"and the Pythagorean win percentage is {raw_image_data['pythagorean_win_percentage']:.4f}."
+        f"After {int(games_played)} game(s), the {team} {year} season has a run differential of {int(run_diff)}."
+        "\n\n"
+        f"The current W% is {current_win_percentage:.4f},\n"
+        f"Pythagorean W% is {pythagorean_win_percentage:.4f}, and\n"
+        f"Pythagorean W% (BRef) is {pythagorean_win_percentage_br:.4f}."
     )
     image_alt_text = (
         f"A table showing various metrics for the {team} {year} season. "
-        f"The table includes run differential, games remaining, and Pythagorean win percentage."
+        f"The table includes run differential, games remaining, and Pythagorean win percentage"
+        f"using regular (2) & baseball-reference.com's (1.83) exponent values)."
     )
     client.send_image(text=bluesky_post, image=raw_image_data, image_alt=image_alt_text)
 
@@ -260,7 +281,7 @@ def main():
             raw_image_data, y1_last, y2_last = generate_plot(teamA, yearA, teamB, yearB, games_played, the_last, this_time, colorA, colorB)
 
             # Post to Bluesky
-            post_plot_to_bluesky(client, teamA, yearA, colorA, teamB, yearB, colorB, games_played, y1_last, y2_last, raw_image_data, colorA, colorB)
+            post_plot_to_bluesky(client, teamA, yearA, teamB, yearB, games_played, y1_last, y2_last, raw_image_data, colorA, colorB)
 
             # Sleep for 10 seconds to avoid rate limits
             time.sleep(10)
@@ -286,10 +307,20 @@ def main():
                 continue
 
             # Generate chart
-            raw_image_data = generate_chart(year, team, diff_data, games_played)
+            raw_image_data, run_diff, current_win_percentage, pythagorean_win_percentage, pythagorean_win_percentage_br = generate_chart(year, team, diff_data, games_played)
 
-            # Post to Bluesky
-            post_chart_to_bluesky(client, team, year, games_played, raw_image_data)
+            # Pass the calculated metrics to the function
+            post_chart_to_bluesky(
+                client,
+                team,
+                year,
+                games_played,
+                raw_image_data,
+                run_diff,
+                current_win_percentage,
+                pythagorean_win_percentage,
+                pythagorean_win_percentage_br
+            )
             
             # Sleep for 10 seconds to avoid rate limits
             time.sleep(10)
