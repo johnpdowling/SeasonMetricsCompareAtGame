@@ -7,12 +7,9 @@ RUN apk add --no-cache git cronie
 COPY . .
 
 # Create pybaseball's cache directory
-ENV PYBASEBALL_CACHE=/cache
 RUN mkdir -p /cache
 
 # Create config directory
-ENV CONFIG_FILE_PATH=/config/config.yaml
-ENV SECRETS_FILE_PATH=/config/secrets.yaml
 RUN mkdir -p /config
 
 # Create volumes
@@ -26,6 +23,8 @@ RUN mkdir -p /var/log
 
 RUN crontab crontab
 
+# Get our python script ready to go
+RUN chmod +x /SeasonMetricsCompareAtGame.py
 # Get the entrypoint script ready to go
 RUN chmod +x /entrypoint.sh
 
