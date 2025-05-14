@@ -1,12 +1,10 @@
 #!/bin/sh
 
-# Enforce the environment variable so it's always routed to the VOLUME mount point
-export PYBASEBALL_CACHE=/cache
-
 # Check whether the config file exists, creating it with default values if it doesn't
-if [ ! -f /config/config.yaml ]; then
-    echo "Creating default config file at /config/config.yaml"
-    cat <<EOL > /config/config.yaml
+CONFIG_FILE_PATH=${CONFIG_FILE_PATH:-/config/config.yaml}
+if [ ! -f "$CONFIG_FILE_PATH" ]; then
+    echo "Creating default config file at $CONFIG_FILE_PATH"
+    cat <<EOL > "$CONFIG_FILE_PATH"
 diffs:
 - team: CHA
   year: 2025
@@ -21,17 +19,16 @@ pairs:
   games_played: 0
 EOL
 fi
-export CONFIG_FILE_PATH=/config/config.yaml
 
 # Check whether the secrets file exists, creating it with default values if it doesn't
-if [ ! -f /config/secrets.yaml ]; then
-    echo "Creating default secrets file at /config/secrets.yaml"
-    cat <<EOL > /config/secrets.yaml
+SECRETS_FILE_PATH=${SECRETS_FILE_PATH:-/config/secrets.yaml}
+if [ ! -f "$SECRETS_FILE_PATH" ]; then
+    echo "Creating default secrets file at $SECRETS_FILE_PATH"
+    cat <<EOL > "$SECRETS_FILE_PATH"
 bluesky:
   username: "USERNAME.bsky.social"
   password: "PASSWORD"
 EOL
 fi
-export SECRETS_FILE_PATH=/config/secrets.yaml
 # Execute the passed command
 exec "$@"
