@@ -1,6 +1,9 @@
 # ignore secrets
 secrets.yaml
 
+# ignore config
+config.yaml
+
 # ignore venv
 .venv
 .venv/*
