@@ -1,1 +1,1 @@
-*/10 * * * * python /SeasonRecordCompareAtGame.py >> /var/log/season-record-compare-at-game.log 2>&1
+*/10 * * * * /usr/local/bin/python /SeasonRecordCompareAtGame.py >> /var/log/season-record-compare-at-game.log 2>&1
