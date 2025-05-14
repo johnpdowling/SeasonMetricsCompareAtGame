@@ -8,6 +8,17 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 from pybaseball import cache, schedule_and_record
 from atproto import Client
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,  # Set to DEBUG to capture detailed logs
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("SeasonMetricsCompareAtGame.log"),  # Log to a file
+        logging.StreamHandler()  # Also log to the console
+    ]
+)
 
 # Global constants
 TOTAL_GAMES_MODERN = 162  # Total number of games in a modern season
@@ -243,21 +254,33 @@ def post_chart_to_bluesky(client, team, year, games_played, raw_image_data, run_
 
 def main():
     # Acquire lock
+    logging.info("Attempting to acquire lock...")
     lock = acquire_lock()
-    # We're in. Enable cache
+    logging.info("Lock acquired successfully.")
+    
+    # Enable cache
+    logging.info("Enabling cache...")
     cache.enable()
     
     try:
         # Load configuration and secrets
+        logging.info(f"Loading configuration from {CONFIG_FILE}...")
         config = load_yaml(CONFIG_FILE)
+        logging.debug(f"Configuration loaded: {config}")
+        
+        logging.info(f"Loading secrets from {SECRETS_FILE}...")
         secrets = load_yaml(SECRETS_FILE)
+        logging.debug(f"Secrets loaded: {secrets}")
 
         # Initialize Bluesky client
+        logging.info("Initializing Bluesky client...")
         client = Client()
         client.login(secrets['bluesky']['username'], secrets['bluesky']['password'])
+        logging.info("Bluesky client initialized and logged in.")
 
         # Process each team-year pair
         for pair in config['pairs']:
+            logging.info(f"Processing pair: {pair}")
             teamA = pair['teamA']
             yearA = pair['yearA']
             colorA = pair['colorA']
@@ -267,50 +290,62 @@ def main():
             games_played = pair['games_played']
 
             # Fetch data
+            logging.info(f"Fetching data for {teamA} {yearA}...")
             the_last = schedule_and_record(yearA, teamA)
+            logging.info(f"Fetching data for {teamB} {yearB}...")
             this_time = schedule_and_record(yearB, teamB)
 
             # Increment for a new games_played
             games_played += 1
+            logging.debug(f"Incremented games_played to {games_played}.")
 
             # Check if games_played is within each data's range
             if games_played < 1 or games_played > get_season_games_played(the_last) or games_played > get_season_games_played(this_time):
-                print(f"Pairs: Games played {games_played} is out of range for {teamA} {yearA} or {teamB} {yearB}.")
+                logging.warning(f"Games played {games_played} is out of range for {teamA} {yearA} or {teamB} {yearB}. Skipping...")
                 continue
 
             # Generate plot
+            logging.info(f"Generating plot for {teamA} {yearA} vs {teamB} {yearB}...")
             raw_image_data, y1_last, y2_last = generate_plot(teamA, yearA, teamB, yearB, games_played, the_last, this_time, colorA, colorB)
 
             # Post to Bluesky
+            logging.info(f"Posting plot to Bluesky for {teamA} {yearA} vs {teamB} {yearB}...")
             post_plot_to_bluesky(client, teamA, yearA, teamB, yearB, games_played, y1_last, y2_last, raw_image_data, colorA, colorB)
 
             # Sleep for 10 seconds to avoid rate limits
+            logging.info("Sleeping for 10 seconds to avoid rate limits...")
             time.sleep(10)
 
             # Increment games played
             pair['games_played'] += 1
+            logging.debug(f"Updated pair: {pair}")
 
         # Process each run differential team
         for diff in config['diffs']:
+            logging.info(f"Processing run differential for: {diff}")
             team = diff['team']
             year = diff['year']
             games_played = diff['games_played']
 
             # Fetch data
+            logging.info(f"Fetching data for {team} {year}...")
             diff_data = schedule_and_record(year, team)
 
             # Increment for a new games_played
             games_played += 1
+            logging.debug(f"Incremented games_played to {games_played}.")
 
             # Check if games_played is within the data's range
             if games_played < 1 or games_played > get_season_games_played(diff_data):
-                print(f"Diffs: Games played {games_played} is out of range for {team} {year}.")
+                logging.warning(f"Games played {games_played} is out of range for {team} {year}. Skipping...")
                 continue
 
             # Generate chart
+            logging.info(f"Generating chart for {team} {year}...")
             raw_image_data, run_diff, current_win_percentage, pythagorean_win_percentage, pythagorean_win_percentage_br = generate_chart(year, team, diff_data, games_played)
 
-            # Pass the calculated metrics to the function
+            # Post to Bluesky
+            logging.info(f"Posting chart to Bluesky for {team} {year}...")
             post_chart_to_bluesky(
                 client,
                 team,
@@ -324,17 +359,25 @@ def main():
             )
             
             # Sleep for 10 seconds to avoid rate limits
+            logging.info("Sleeping for 10 seconds to avoid rate limits...")
             time.sleep(10)
 
             # Increment games played
             diff['games_played'] += 1
+            logging.debug(f"Updated diff: {diff}")
 
         # Save updated configuration
+        logging.info(f"Saving updated configuration to {CONFIG_FILE}...")
         save_yaml(config, CONFIG_FILE)
+        logging.info("Configuration saved successfully.")
 
+    except Exception as e:
+        logging.error(f"An error occurred: {e}", exc_info=True)
     finally:
         # Release lock
+        logging.info("Releasing lock...")
         release_lock(lock)
+        logging.info("Lock released.")
 
 if __name__ == "__main__":
     main()
