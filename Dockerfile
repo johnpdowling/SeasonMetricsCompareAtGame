@@ -21,6 +21,9 @@ VOLUME [ "/config" ]
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Create log directory
+RUN mkdir -p /var/log
+
 RUN crontab crontab
 
 # Get the entrypoint script ready to go
