@@ -24,15 +24,15 @@ jobs:
     # Build the Docker image
     - name: Build Docker image
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/wlcompare:latest .
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/season-metrics-compare-at-game:latest .
 
     # Tag the Docker image
     - name: Tag Docker image
       run: |
-        docker tag ${{ secrets.DOCKER_USERNAME }}/wlcompare:latest ${{ secrets.DOCKER_USERNAME }}/wlcompare:${{ github.sha }}
+        docker tag ${{ secrets.DOCKER_USERNAME }}/season-metrics-compare-at-game:latest ${{ secrets.DOCKER_USERNAME }}/season-metrics-compare-at-game:${{ github.sha }}
 
     # Push the Docker image
     - name: Push Docker image
       run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/wlcompare:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/wlcompare:${{ github.sha }}
+        docker push ${{ secrets.DOCKER_USERNAME }}/season-metrics-compare-at-game:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/season-metrics-compare-at-game:${{ github.sha }}
