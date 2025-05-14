@@ -5,6 +5,9 @@ secrets.yaml
 .venv
 .venv/*
 venv
+
+process.lock
+
 # ignore python virtual environment
 .Python
 [Bb]in
