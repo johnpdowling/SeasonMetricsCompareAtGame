@@ -1,19 +1,19 @@
-pairs:
-  - teamA: "CHA"
-    yearA: 2024
-    colorA: "red"
-    teamB: "CHA"
-    yearB: 2025
-    colorB: "black"
-    games_played: 0
-  - teamA: "CHA"
-    yearA: 2024
-    colorA: "red"
-    teamB: "COL"
-    yearB: 2025
-    colorB: "purple"
-    games_played: 0
 diffs:
-  - team: "COL"
-    year: 2025
-    games_played: 0
+- team: COL
+  year: 2025
+  games_played: 0
+pairs:
+- teamA: CHA
+  yearA: 2024
+  colorA: red
+  teamB: CHA
+  yearB: 2025
+  colorB: black
+  games_played: 0
+- teamA: CHA
+  yearA: 2024
+  colorA: red
+  teamB: COL
+  yearB: 2025
+  colorB: blueviolet
+  games_played: 0
