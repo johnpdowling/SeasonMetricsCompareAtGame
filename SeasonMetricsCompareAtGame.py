@@ -125,18 +125,32 @@ def generate_chart(year, team, diff_data, games_played):
         bytes: The chart image data as raw bytes.
     """
     # Calculate metrics
-    run_diff = diff_data.loc[games_played, 'R'] - diff_data.loc[games_played, 'RA']
+    runs_scored = diff_data.loc[:games_played, 'R'].sum()
+    runs_allowed = diff_data.loc[:games_played, 'RA'].sum()
+    run_diff = runs_scored - runs_allowed
+    # RD mean
     run_diff_per_game = run_diff / games_played
-    games_remaining_modern = TOTAL_GAMES_MODERN - games_played
-    games_remaining_olden = TOTAL_GAMES_OLDEN - games_played
-    run_diff_per_game_modern_record = (OAK_2023_DIFF - run_diff) / games_remaining_modern
-    run_diff_per_game_olden_record = (BOS_1932_DIFF - run_diff) / games_remaining_olden
-    run_diff_per_game_olden_record_modern_games = (BOS_1932_DIFF - run_diff) / games_remaining_modern
+    # games remaining, modern season
+    games_remaining_modern = TOTAL_GAMES_MODERN - games_played if TOTAL_GAMES_MODERN > games_played else 0
+    # games remaining, olden season
+    games_remaining_olden = TOTAL_GAMES_OLDEN - games_played if TOTAL_GAMES_OLDEN > games_played else 0
+    # calculate the run differential per game required to match the 2023 OAK run differential
+    run_diff_per_game_modern_record = (OAK_2023_DIFF - run_diff) / games_remaining_modern if games_remaining_modern > 0 else "---"
+    # calculate the run differential per game required to match the 1932 BOS run differential
+    run_diff_per_game_olden_record = (BOS_1932_DIFF - run_diff) / games_remaining_olden if games_remaining_olden > 0 else "---"
+    # calculate the run differential per game required to match the 1932 BOS run differential with the modern season length
+    run_diff_per_game_olden_record_modern_games = (BOS_1932_DIFF - run_diff) / games_remaining_modern if games_remaining_modern > 0 else "---"
+    # get the current win total
     current_wins = get_wins_after_games(diff_data, games_played)
+    # calculate the current win percentage
     current_win_percentage = current_wins / games_played
-    pythagorean_win_percentage = (diff_data.loc[games_played, 'R'] ** 2) / ((diff_data.loc[games_played, 'R'] ** 2 + diff_data.loc[games_played, 'RA'] ** 2))
+    # calculate the pythagorean win percentage
+    pythagorean_win_percentage = (runs_scored ** 2) / ((runs_scored ** 2) + (runs_allowed ** 2))
+    # calculate the pythagorean wins
     pythagorean_wins = pythagorean_win_percentage * games_played
-    pythagorean_win_percentage_br = (diff_data.loc[games_played, 'R'] ** 1.83) / ((diff_data.loc[games_played, 'R'] ** 1.83) + (diff_data.loc[games_played, 'RA'] ** 1.83))
+    # caluclate the pythagorean win percentage, baseball-reference style
+    pythagorean_win_percentage_br = (runs_scored ** 1.83) / ((runs_scored ** 1.83) + (runs_allowed ** 1.83))
+    # calculate the pythagorean wins, baseball-reference style
     pythagorean_wins_br = pythagorean_win_percentage_br * games_played
 
     # Create a DataFrame to organize the data
