@@ -79,9 +79,12 @@ def generate_plot(teamA, yearA, teamB, yearB, games_played, the_last, this_time,
     y1 = [get_wins_after_games(the_last, i) for i in x]
     y2 = [get_wins_after_games(this_time, i) for i in x]
 
+    # Create a step line plot
     plt.figure(figsize=(8, 8))
     plt.step(x, y1, label=f"{teamA} {yearA} Season", where='mid', color=colorA)
     plt.step(x, y2, label=f"{teamB} {yearB} Season", where='mid', color=colorB)
+
+    # Add labels, title, and legend
     plt.xlabel('Games Played')
     plt.xlim(1, games_played)
     plt.ylabel('Wins')
@@ -89,12 +92,19 @@ def generate_plot(teamA, yearA, teamB, yearB, games_played, the_last, this_time,
     plt.title(f"Wins Comparison: {teamA} {yearA} vs {teamB} {yearB} Seasons")
     plt.legend(loc='upper left')
     plt.grid(True)
-    plt.gca().set_aspect('equal', adjustable='box')
 
+    # Set the aspect ratio to be equal
+    # plt.gca().set_aspect('equal', adjustable='box')
+
+    # Save the plot to a BytesIO buffer
     buffer = BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
+    
+    # Store the raw image data in a variable
     raw_image_data = buffer.getvalue()
+    
+    # Close the buffer and the plot
     buffer.close()
     plt.close()
 
@@ -191,7 +201,7 @@ def generate_chart(year, team, diff_data, games_played):
 
     # Right-align the first column
     for (row, col), cell in table.get_celld().items():
-        if col == 0:  # First column
+        if col == 0 and row > 0:  # First column
             cell.set_text_props(ha='right')  # Set horizontal alignment to 'right'
 
     # Save the table as an image in a BytesIO buffer
