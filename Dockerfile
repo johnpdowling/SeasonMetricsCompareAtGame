@@ -1,8 +1,8 @@
 FROM python:3.13.3-alpine3.21
 
-# Add git
+# Add git & cronie
 RUN apk update
-RUN apk add --no-cache git
+RUN apk add --no-cache git cronie
 
 COPY . .
 
@@ -25,4 +25,4 @@ RUN chmod +x /entrypoint.sh
 
 # Use the entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["cron", "-f"]
+CMD ["crond", "-f"]
