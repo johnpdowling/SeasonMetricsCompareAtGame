@@ -15,9 +15,10 @@ TOTAL_GAMES_OLDEN = 154   # Total number of games in an olden season
 OAK_2023_DIFF = -339      # Run differential for the 2023 OAK season
 BOS_1932_DIFF = -349      # Run differential for the 1932 BOS season
 
+# Replace YAML file paths with environment variable lookups
 LOCK_FILE = "process.lock"
-CONFIG_FILE = "config.yaml"
-SECRETS_FILE = "secrets.yaml"
+CONFIG_FILE = os.getenv("CONFIG_FILE_PATH", "config.yaml")
+SECRETS_FILE = os.getenv("SECRETS_FILE_PATH", "secrets.yaml")
 
 def acquire_lock():
     """Acquire a lock to prevent concurrent execution."""
