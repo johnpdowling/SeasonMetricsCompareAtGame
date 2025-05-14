@@ -1,4 +1,4 @@
 PYBASEBALL_CACHE=/cache
 CONFIG_FILE_PATH=/config/config.yaml
 SECRETS_FILE_PATH=/config/secrets.yaml
-*/10 * * * * /usr/local/bin/python /SeasonMetricsCompareAtGame.py > /proc/$(cat /var/run/crond.pid)/fd/1 2>&1
+*/10 * * * * /usr/local/bin/python /SeasonMetricsCompareAtGame.py > /proc/1/fd/1 2>&1
