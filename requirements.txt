@@ -1,4 +1,4 @@
-https://github.com/jburgessd/pybaseball/archive/issue-470-fix.zip
+git+https://github.com/johnpdowling/pybaseball.git
 atproto
 pyyaml
 matplotlib
