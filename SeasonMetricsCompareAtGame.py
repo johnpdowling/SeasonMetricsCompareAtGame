@@ -236,7 +236,7 @@ def post_plot_to_bluesky(client, teamA, yearA, teamB, yearB, games_played, y1_la
     if y1_last > y2_last:
         # It's worse. Shit.
         bluesky_post = (
-            f"With {games_played} game(s) in the books, the {teamB} {yearB} season is somehow worse at {y2_last} wins,"
+            f"With {games_played} game(s) in the books, the {teamB} {yearB} season is somehow worse at {y2_last} wins, "
             f"behind the {teamA} {yearA} season by {y1_last - y2_last} win(s)."
             "\n\n"
             "No 'could always be' worse here. It *is* worse at this point."
@@ -275,8 +275,8 @@ def post_chart_to_bluesky(client, team, year, games_played, raw_image_data, run_
         f"Pythagorean W% (BRef) is {pythagorean_win_percentage_br:.4f}."
     )
     image_alt_text = (
-        f"A table showing various metrics for the {team} {year} season. "
-        f"The table includes run differential, games remaining, and Pythagorean win percentage"
+        f"A table showing various metrics for the {team} {year} season.\n"
+        f"The table includes run differential, games remaining, and Pythagorean win percentage "
         f"using regular (2) & baseball-reference.com's (1.83) exponent values)."
     )
     client.send_image(text=bluesky_post, image=raw_image_data, image_alt=image_alt_text)
