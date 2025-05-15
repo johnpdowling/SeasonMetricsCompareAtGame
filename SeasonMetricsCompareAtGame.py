@@ -281,6 +281,11 @@ def post_chart_to_bluesky(client, team, year, games_played, raw_image_data, run_
     )
     client.send_image(text=bluesky_post, image=raw_image_data, image_alt=image_alt_text)
 
+def flush_this_year():
+    """Flush the cache for schedule and record data for the current year."""
+    current_year = pd.Timestamp.now().year
+    cache.flush_func_and_arg('schedule_and_record', current_year)
+
 def main():
     # Acquire lock
     logging.info("Attempting to acquire lock...")
@@ -403,6 +408,9 @@ def main():
     except Exception as e:
         logging.error(f"An error occurred: {e}", exc_info=True)
     finally:
+        # Get rid of any cached data from this year
+        logging.info("Removing cached data from this year...")
+        flush_this_year()
         # Release lock
         logging.info("Releasing lock...")
         release_lock(lock)
